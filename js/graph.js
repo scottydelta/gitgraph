@@ -1,4 +1,3 @@
-
 //GLOBAL VARIABLES
 var repoList = [];
 var accessToken="";
@@ -108,49 +107,74 @@ function make_ylist() {
 
 //CODE FOR HIGHCHARTS JS
 function makeChart() {
-        $('#container').highcharts({
-            chart: {
-                type: 'line',
-                marginRight: 130,
-                marginBottom: 100
+
+    $('#container').highcharts({
+        chart: {
+            type: 'line',
+            zoomType: 'x'
+        },
+        title: {
+            text: 'Github Commit History'
+        },
+        subtitle: {
+            text: 'Source: github.com'
+        },
+        credits: {
+            enabled: true,
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5
             },
+            href: "http://www.accelerator2.cloudapp.net",
+            text: "Project Borg"
+        },
+        xAxis: {
+            categories: xlist,
+           
+        },
+        scrollbar: {
+            enabled: true
+        },
+
+        yAxis: {
+           
             title: {
-                text: 'Github Commit History',
-                x: -20 //center
+                text: 'No. of Commits'
+            }
+        },
+        legend: {
+            shadow: true
+        },
+        tooltip: {
+                valueSuffix: ' commits'
             },
-            subtitle: {
-                text: 'Source: github.com',
-                x: -20
-            },
-            xAxis: {
-                categories: xlist
-            },
-            yAxis: {
-                title: {
-                    text: 'No. of Commits'
-                },
-                plotLines: [{
+        plotLines: [{
                     value: 0,
                     width: 1,
                     color: '#808080'
-                }]
-            },
-            tooltip: {
-                valueSuffix: ' commits'
-            },
-            legend: {
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'top',
-                x: -10,
-                y: 100,
-                borderWidth: 0
-            },
-            series: [{
-                name: $("#repoSelector option:selected").text(),
-                data: ylist
-            }]
+                }],
+        series: [{
+            name: ' commits',
+            data: ylist}],
+	        
+            scrollbar: {
+                enabled: true,
+                barBackgroundColor: 'gray',
+                barBorderRadius: 7,
+                barBorderWidth: 0,
+                buttonBackgroundColor: 'gray',
+                buttonBorderWidth: 0,
+                buttonArrowColor: 'white',
+                buttonBorderRadius: 7,
+                rifleColor: 'white',
+                trackBackgroundColor: 'white',
+                trackBorderWidth: 1,
+                trackBorderColor: 'silver',
+                trackBorderRadius: 7
+            }
         });
-    }
-
+    
+}
 //CODE FOR HIGH CHARTS END
