@@ -8,6 +8,7 @@ var xlist = [];
 var ylist = [];
 var monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 var callUrl = "";
+var shaList = [];
 
 function makeRepolist(){
     var tempVal;
@@ -24,14 +25,17 @@ function makeRepolist(){
 function makeUrlCus(){
     
     callUrl = "https://api.github.com/repos/" + $("#customRepo").val() + "/commits?page=1&per_page=500&access_token=" + accessToken;
-    loadGITdata(callUrl);
+    loadGITdata(callUrl, "2");
+    
 }
 function makeUrl(){
     
     callUrl = "https://api.github.com/repos/" + loggedUser + "/" + $("#repoSelector option:selected").text() + "/commits?page=1&per_page=500&access_token=" + accessToken;
-    loadGITdata(callUrl);
+    loadGITdata(callUrl, "1");
+    
 }
-function loadGITdata(callUrl){
+
+function loadGITdata(callUrl, coder){
     if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
             xmlhttp=new XMLHttpRequest();
         }
@@ -43,9 +47,12 @@ function loadGITdata(callUrl){
             gitData = xmlhttp.responseText;
             mainData = JSON.parse(gitData);
             dateList = [];
+	    shaList = [];
             for(var i=0;i<mainData.length;i++){
                dateList.push(mainData[i].commit.author.date);
+		shaList.push(mainData[i].sha);
                 }
+	    makeSha(coder);
             makeData();
             }
         }
@@ -178,3 +185,45 @@ function makeChart() {
     
 }
 //CODE FOR HIGH CHARTS END
+
+var tempNumber = 1;
+
+function makeSha(recCode){
+
+        var userAndrepo="";
+        console.log(recCode);
+
+        if (String(recCode) ==="2")
+                userAndrepo = $("#customRepo").val();
+        else if(String(recCode) ==="1")
+                userAndrepo = loggedUser + "/" + $("#repoSelector option:selected").text();
+        else
+                console.log("unknown code: callfor commit history not recognized");
+        console.log(userAndrepo);
+        console.log(shaList);
+        for(i=shaList.length-1;i>=0;i--){
+                shacallUrl = "https://api.github.com/repos/" + userAndrepo + "/commits/" + shaList[i];
+                loadSHAdata(shacallUrl);
+        }   
+}
+function loadSHAdata(shacallUrl){
+    
+    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp=new XMLHttpRequest();
+        }   
+    else{// code for IE6, IE5
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }   
+    xmlhttp.onreadystatechange=function(){
+        if (xmlhttp.readyState==4 && xmlhttp.status==200){
+            shaData = xmlhttp.responseText;
+            shamainData = JSON.parse(shaData);
+            commitRecord = "<p>" + tempNumber + ", Commit on: " + shamainData.commit.author.date + ", Commit message: " + shamainData.commit.message + "</br><font style='background-color:grey'>" + shamainData.stats.additions + " Additions, " + shamainData.stats.deletions + " Deletions in ";                $("#comiCon").append(commitRecord);
+	    tempNumber++;
+         }
+        }
+        xmlhttp.open("GET", shacallUrl ,true);
+        xmlhttp.send();
+
+
+    }
