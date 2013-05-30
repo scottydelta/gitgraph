@@ -9,7 +9,7 @@ var ylist = [];
 var monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 var callUrl = "";
 var shaList = [];
-var paraList= [];
+var userAndrepo = "";
 function makeRepolist(){
     var tempVal;
     var tempHtml
@@ -18,24 +18,23 @@ function makeRepolist(){
     for (var i = 0; i < repoList.length; i++) {
         tempVal += '<option value=">' + repoList[i] + '">' + repoList[i] + '</option>';
     };
-    tempHtml = '<p>Choose a Repositories: <select id="repoSelector" onClick="makeUrl()">' + tempVal + '</select></p><p>Enter Repository Details: <input type="text" id="customRepo" placeholder="username/reponame"><button onClick="makeUrlCus()">Draw</button>';
+    tempHtml = '<p>Choose a Repositories: <select id="repoSelector">' + tempVal + '</select><button onClick="makeUrl()">Draw</button></p><p>Enter Repository Details: <input type="text" id="customRepo" placeholder="username/reponame"><button onClick="makeUrlCus()">Draw</button>';
     $("#repoDiv").html(tempHtml);
 }
 
 function makeUrlCus(){
-    
-    callUrl = "https://api.github.com/repos/" + $("#customRepo").val() + "/commits?page=1&per_page=500&access_token=" + accessToken;
-    loadGITdata(callUrl, "2");
-    //makeSha("2");
-};
-function makeUrl(){
-    
-    callUrl = "https://api.github.com/repos/" + loggedUser + "/" + $("#repoSelector option:selected").text() + "/commits?page=1&per_page=500&access_token=" + accessToken;
-    loadGITdata(callUrl, "1");
-    //makeSha("1");  
+	userAndrepo = $("#customRepo").val();
+	callUrl = "https://api.github.com/repos/" + userAndrepo  + "/commits?page=1&per_page=500&access_token=" + accessToken;
+	loadGITdata(callUrl);
 }
 
-function loadGITdata(callUrl, coder){
+function makeUrl(){
+	userAndrepo = loggedUser + "/" + $("#repoSelector option:selected").text();
+	callUrl = "https://api.github.com/repos/" + userAndrepo + "/commits?page=1&per_page=500&access_token=" + accessToken;
+	loadGITdata(callUrl);  
+}
+
+function loadGITdata(callUrl){
     if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
             xmlhttp=new XMLHttpRequest();
         }
@@ -52,8 +51,8 @@ function loadGITdata(callUrl, coder){
                dateList.push(mainData[i].commit.author.date);
 		shaList.push(mainData[i].sha);
                 }
-//	    makeSha(coder);
             makeData();
+	    makeSha();
             }
         }
         xmlhttp.open("GET", callUrl ,true);
@@ -163,7 +162,7 @@ function makeChart() {
                     color: '#808080'
                 }],
         series: [{
-            name: ' commits',
+            name: userAndrepo,
             data: ylist}],
 	        
             scrollbar: {
@@ -182,28 +181,26 @@ function makeChart() {
                 trackBorderRadius: 7
             }
         });
-    makeSha("1");
+   
 }
 //CODE FOR HIGH CHARTS END
 
-var tempNumber = 1;
+function makeSha(){
 
-function makeSha(recCode){
+//        var userAndrepo="";
+//        if (String(recCode) ==="2")
+//                userAndrepo = $("#customRepo").val();
+//        else if(String(recCode) ==="1")
+//                userAndrepo = loggedUser + "/" + $("#repoSelector option:selected").text();
+//        else
+//                console.log("unknown code: callfor commit history not recognized");
 
-        var userAndrepo="";
-        if (String(recCode) ==="2")
-                userAndrepo = $("#customRepo").val();
-        else if(String(recCode) ==="1")
-                userAndrepo = loggedUser + "/" + $("#repoSelector option:selected").text();
-        else
-                console.log("unknown code: callfor commit history not recognized");
-//	$("#comiCon").html("");
-	//paraList = []; 
+//	paraList = []; 
+	$("#comiCon").html("");
         for(i=shaList.length-1;i>=0;i--){
-                shacallUrl = "https://api.github.com/repos/" + userAndrepo + "/commits/" + shaList[i] + "?access_token=" + accessToken;
-		getshaData(shacallUrl,dateList[i+1],i);
+		shacallUrl = "https://api.github.com/repos/" + userAndrepo + "/commits/" + shaList[i] + "?access_token=" + accessToken;
+		getshaData1(shacallUrl,dateList[i+1],shaList.length-i);
 	}
-	//genPara();
 }   
 
 function genPara(){
@@ -217,7 +214,23 @@ function genPara(){
 	$("#comiCon").html(tempCon);
 	paraList = [];
 }
-
+function getshaData1(shaUrl, dater, no){
+	$.ajax({
+		url: shaUrl,
+		dataType: 'json',
+		async: false,
+		success: function(data){
+			nowDate = data.commit.author.date;
+			if(typeof dater =='undefined')
+				dater = nowDate;
+			var d = parseInt(Date.parse(nowDate)) -parseInt(Date.parse(dater));
+			var days=1000*60*60*24;
+			var comiDay=Math.round(d/days);		
+			commitRecord = "<p>" + String(no) + ". Commit on: " + data.commit.author.date + ", commit message: " + data.commit.message + "</br><font style='background-color:#D8D8D8'>" + data.stats.additions  + " Additions, " + data.stats.deletions + " Deletions in "+  comiDay + " days since last commit</font></p>";
+			$("#comiCon").append(commitRecord);
+		}
+	});
+}
 function getshaData(shaUrl, dater, no){
 	//tempData1 = $.ajax(shaUrl);
 	//console.log(tempData1);
@@ -233,8 +246,10 @@ function getshaData(shaUrl, dater, no){
 		var hours=minutes*60;
 		var days=hours*24;
 		var comiDay=Math.round(d/days);
-		paraList[no] = [];
-		paraList[no].push(shamainData.commit.author.date, shamainData.commit.message, shamainData.stats.additions, shamainData.stats.deletions, comiDay, no);
+		paraList= [];
+		paraList.push(shamainData.commit.author.date, shamainData.commit.message, shamainData.stats.additions, shamainData.stats.deletions, comiDay, no);
+		console.log(no);
+	//	console.log(paraList);
 		//$("#comiCon").append(commitRecord);
 		//tempNumber++;
 	});
