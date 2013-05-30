@@ -57,9 +57,7 @@ function loadGITdata(callUrl){
         }
         xmlhttp.open("GET", callUrl ,true);
         xmlhttp.send();
-        
-
-    }
+}
 
 //GENERATES X-AXIS DATA FOR
 function makeData (){
@@ -89,9 +87,6 @@ function makeData (){
             
 
         }
-        
-    
-    
     make_ylist();
 
 }
@@ -108,7 +103,6 @@ function make_ylist() {
         ylist[index] += 1;
     };
     $(function() { makeChart(); });
-    //makeSha("1"); 
 }
 
 //CODE FOR HIGHCHARTS JS
@@ -186,16 +180,6 @@ function makeChart() {
 //CODE FOR HIGH CHARTS END
 
 function makeSha(){
-
-//        var userAndrepo="";
-//        if (String(recCode) ==="2")
-//                userAndrepo = $("#customRepo").val();
-//        else if(String(recCode) ==="1")
-//                userAndrepo = loggedUser + "/" + $("#repoSelector option:selected").text();
-//        else
-//                console.log("unknown code: callfor commit history not recognized");
-
-//	paraList = []; 
 	$("#comiCon").html("");
         for(i=shaList.length-1;i>=0;i--){
 		shacallUrl = "https://api.github.com/repos/" + userAndrepo + "/commits/" + shaList[i] + "?access_token=" + accessToken;
@@ -203,17 +187,6 @@ function makeSha(){
 	}
 }   
 
-function genPara(){
-	var tempCon= "";
-	console.log(paraList);
-	for(i = paraList.length-1 ;i>=0;i--){
-		commitRecord = "<p>" + String(paraList[i][5]+ 1) + ", Commit on: " + paraList[i][0] + ", Commit message: " + paraList[i][1] + "</br><font style='background-color:#D8D8D8'>" +paraList[i][2] + " Additions, " + paraList[i][3] + " Deletions in "+  paraList[i][4]+ " days</font>" + "    " + paraList[i][5] + "</p>";
-	//	console.log(commitRecord);
-	tempCon += commitRecord;	
-	}
-	$("#comiCon").html(tempCon);
-	paraList = [];
-}
 function getshaData1(shaUrl, dater, no){
 	$.ajax({
 		url: shaUrl,
@@ -231,46 +204,4 @@ function getshaData1(shaUrl, dater, no){
 		}
 	});
 }
-function getshaData(shaUrl, dater, no){
-	//tempData1 = $.ajax(shaUrl);
-	//console.log(tempData1);
-	//temp = JSON.parse(tempData1.responseText);
-	//console.log(temp);
-	//console.log(parsedJson.commit.message);	
-	$.getJSON(shaUrl, function(shamainData) {
-		nowDate = shamainData.commit.author.date;
-		if(typeof dater =='undefined')
-			dater = nowDate;	
-		var d = parseInt(Date.parse(nowDate)) -parseInt(Date.parse(dater));
-		var minutes=1000*60;
-		var hours=minutes*60;
-		var days=hours*24;
-		var comiDay=Math.round(d/days);
-		paraList= [];
-		paraList.push(shamainData.commit.author.date, shamainData.commit.message, shamainData.stats.additions, shamainData.stats.deletions, comiDay, no);
-		console.log(no);
-	//	console.log(paraList);
-		//$("#comiCon").append(commitRecord);
-		//tempNumber++;
-	});
-}
 
-function loadSHAdata(shacallUrl){
-    
-    if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }   
-    else{// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }   
-    xmlhttp.onreadystatechange=function(){
-        if (xmlhttp.readyState==4 && xmlhttp.status==200){
-            shaData = xmlhttp.responseText;
-            shamainData = JSON.parse(shaData);
-            commitRecord = "<p>" + tempNumber + ", Commit on: " + shamainData.commit.author.date + ", Commit message: " + shamainData.commit.message + "</br><font style='background-color:grey'>" + shamainData.stats.additions + " Additions, " + shamainData.stats.deletions + " Deletions in ";                $("#comiCon").append(commitRecord);
-	    tempNumber++;
-         }
-        }
-        xmlhttp.open("GET", shacallUrl ,true);
-        xmlhttp.send();
-}
