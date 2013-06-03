@@ -28,6 +28,7 @@ function makeUrlCus(){
 	userAndrepo = $("#customRepo").val();
 	callUrl = "https://api.github.com/repos/" + userAndrepo + "/commits?per_page=100&last_sha=" + last_sha + "&access_token=" + accessToken;
 	//loadGITdata(callUrl);
+	getCommitHistory(callUrl);
 }
 
 function makeUrl(){
@@ -47,18 +48,24 @@ function getCommitHistory(callUrl){
 		async: false,
 		success: function(localData){
 			tempVar = localData;
-			console.log(localData);
+            		for(var i=0;i<localData.length;i++){
+               		    dateList.push(localData[i].commit.author.date);
+			    shaList.push(localData[i].sha);
+        		    }
+			//console.log(localData);
 			//if(localData.length===0)
 			//	console.log("hereh to break");
-			gitData = $.extend(gitData, localData);
+			//gitData = $.extend(gitData, localData);
 			}
 		});
 	if(tempVar.length===0)
 		break;
-	console.log(gitData.length + "u r here");	
 	last_sha = tempVar[tempVar.length-1].sha;
 	callUrl = "https://api.github.com/repos/" + userAndrepo + "/commits?per_page=100&last_sha=" + last_sha + "&access_token=" + accessToken;
 	}
+	makeData();
+	makeSha(printData);
+	console.log(shaList.length);
 	console.log(tempVar.length + "and then here");
 	last_sha = "";
 }
