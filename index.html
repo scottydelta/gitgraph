@@ -12,6 +12,10 @@
 <h2 id="topText">Login To Github</h2>
 <button id="login">Login</button>
 <div id="repoDiv"></div>
+<div id="loaderImg" style="display:none">
+<img src="ajax-loader.gif">
+<p id="percent"></p>
+</div>
 <div id="container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
 <div id="comiCon" style="height: 400px; margin: 0 auto"></div>
  <script>
@@ -20,12 +24,13 @@ $('#login').click(function () {
     window.open('https://github.com' + 
         '/login/oauth/authorize' + 
         '?client_id=7cb3ed877d67aa4ac9d5' +
-        '&scope=gist');
+        '&scope=repo:status');
 });
 window.addEventListener('message', function (event) {
     var code = event.data;
     $.get('token.php?code=' + code, function (access_token) {
-        accessToken = access_token
+        accessToken = access_token;
+	console.log(accessToken);
         $.getJSON('https://api.github.com/user?access_token=' + access_token, function (user) {
             loggedUser = user.login;
             $.getJSON('https://api.github.com/users/' + loggedUser+ '/repos?access_token=' + access_token, function (repos) {
@@ -38,6 +43,5 @@ window.addEventListener('message', function (event) {
     });
 });
 </script>
-
 </body>
 </html>

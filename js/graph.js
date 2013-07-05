@@ -12,6 +12,7 @@ var shaList = [];
 var userAndrepo = "";
 var dataDict = {};
 var last_sha = "";
+var setInter;
 function makeRepolist(){
     var tempVal;
     var tempHtml
@@ -20,27 +21,27 @@ function makeRepolist(){
     for (var i = 0; i < repoList.length; i++) {
         tempVal += '<option value=">' + repoList[i] + '">' + repoList[i] + '</option>';
     };
-    tempHtml = '<p>Choose a Repositories: <select id="repoSelector">' + tempVal + '</select><button onClick="makeUrl()">Draw</button></p><p>Enter Repository Details: <input type="text" id="customRepo" placeholder="username/reponame"><button onClick="makeUrlCus()">Draw</button>';
+    tempHtml = '<p>Choose a Repositories: <select id="repoSelector">' + tempVal + '</select><button onClick="makeUrl();inter();">Draw</button></p><p>Enter Repository Details: <input type="text" id="customRepo" placeholder="username/reponame"><button onClick="makeUrlCus();inter();">Draw</button>';
     $("#repoDiv").html(tempHtml);
 }
 
 function makeUrlCus(){
 	userAndrepo = $("#customRepo").val();
 	callUrl = "https://api.github.com/repos/" + userAndrepo + "/commits?per_page=100&last_sha=" + last_sha + "&access_token=" + accessToken;
-	//loadGITdata(callUrl);
 	getCommitHistory(callUrl);
 }
 
 function makeUrl(){
 	userAndrepo = loggedUser + "/" + $("#repoSelector option:selected").text();
 	callUrl = "https://api.github.com/repos/" + userAndrepo + "/commits?per_page=100&last_sha=" + last_sha + "&access_token=" + accessToken;
-	//loadGITdata(callUrl);  
 	getCommitHistory(callUrl);
 }
 function getCommitHistory(callUrl){
 	gitData = [];
 	var tempVar = [];
 	last_sha = "";
+	shaList = [];
+	dateList = [];
 	while(true){
 	$.ajax({
 		url: callUrl,
@@ -52,10 +53,6 @@ function getCommitHistory(callUrl){
                		    dateList.push(localData[i].commit.author.date);
 			    shaList.push(localData[i].sha);
         		    }
-			//console.log(localData);
-			//if(localData.length===0)
-			//	console.log("hereh to break");
-			//gitData = $.extend(gitData, localData);
 			}
 		});
 	if(tempVar.length===0)
@@ -63,10 +60,9 @@ function getCommitHistory(callUrl){
 	last_sha = tempVar[tempVar.length-1].sha;
 	callUrl = "https://api.github.com/repos/" + userAndrepo + "/commits?per_page=100&last_sha=" + last_sha + "&access_token=" + accessToken;
 	}
+	dataDict = {};
 	makeData();
-	makeSha(printData);
-	console.log(shaList.length);
-	console.log(tempVar.length + "and then here");
+	makeSha();
 	last_sha = "";
 }
 
@@ -88,7 +84,7 @@ function loadGITdata(callUrl){
 		shaList.push(mainData[i].sha);
                 }
             makeData();
-	    makeSha(printData);
+	    makeSha();
             }
         }
         xmlhttp.open("GET", callUrl ,true);
@@ -214,26 +210,38 @@ function makeChart() {
    
 }
 //CODE FOR HIGH CHARTS END
-function printData(){
-	console.log(dataDict);	
+
+function inter(){
+	$("#loaderImg").show();
+	setInter = setInterval(printData, 1000);
 }
-function makeSha(callback){
-	$("#comiCon").html("");
-	//dataDict = {};
-        for(i=shaList.length-1;i>=0;i--){
+function printData(){
+	if(Object.keys(dataDict).length=== dateList.length){
+		$("#comiCon").html("");
+		for(var i=1; i<= Object.keys(dataDict).length; i++){
+			commitRecord = "<p>" + dataDict[i][0] + ". Commit on: " + dataDict[i][1] + ", commit message: " + dataDict[i][2] + "</br><font style='background-color:#D8D8D8'>" + dataDict[i][3]  + " Additions, " + dataDict[i][4] + " Deletions in "+  dataDict[i][5] + " days since last commit</font></p>";
+			$("#comiCon").append(commitRecord);
+	
+		}
+		$("#loaderImg").hide();
+		window.clearInterval(setInter);
+	}
+	else{
+		$("#percent").html(Object.keys(dataDict).length + "/" + dateList.length);
+	}
+}
+
+function makeSha(){
+        for(var i=shaList.length-1;i>=0;i--){
 		shacallUrl = "https://api.github.com/repos/" + userAndrepo + "/commits/" + shaList[i] + "?access_token=" + accessToken;
 		getshaData1(shacallUrl,dateList[i+1],shaList.length-i);
 	}
-	if (typeof callback === 'function'){
-		callback();
-	}
+	return "success";
 }   
-
 function getshaData1(shaUrl, dater, no){
 	$.ajax({
 		url: shaUrl,
 		dataType: 'json',
-		//async: false,
 		success: function(data){
 			nowDate = data.commit.author.date;
 			if(typeof dater =='undefined')
@@ -241,10 +249,7 @@ function getshaData1(shaUrl, dater, no){
 			var d = parseInt(Date.parse(nowDate)) -parseInt(Date.parse(dater));
 			var days=1000*60*60*24;
 			var comiDay=Math.round(d/days);		
-			dataDict[no] = [no, data.commit.author.date, data.commit.message, comiDay];
-		//	commitRecord = "<p>" + String(no) + ". Commit on: " + data.commit.author.date + ", commit message: " + data.commit.message + "</br><font style='background-color:#D8D8D8'>" + data.stats.additions  + " Additions, " + data.stats.deletions + " Deletions in "+  comiDay + " days since last commit</font></p>";
-	//		$("#comiCon").append(commitRecord);
+			dataDict[no] = [no, data.commit.author.date, data.commit.message, data.stats.additions, data.stats.deletions, comiDay];
 		}
 	});
 }
-
